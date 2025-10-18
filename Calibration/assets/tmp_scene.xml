@@ -1,0 +1,38 @@
+<mujoco model="scene">
+         <worldbody>
+            <light diffuse="0.8 0.8 0.8" 
+                specular="0.2 0.2 0.2" 
+                pos="0 0 4" 
+                dir="0 0 -1" 
+                cutoff="180"
+                castshadow="false"
+                directional="true"/>
+
+            <!-- Gray ground plane -->
+            <geom type="plane" 
+                size="5 5 0.1" 
+                rgba="0.3 0.3 0.3 1" 
+                contype="1" 
+                conaffinity="1" 
+                friction="1 0.005 0.0001"/>
+
+            <geom name="tiny_cube"
+              type="box"
+              size="0.02 0.02 0.02"
+              pos="0.17 -0.02 0.02"
+              rgba="1 0 0 1"
+              mass="0.001"
+              contype="1"
+              conaffinity="1"/>
+              
+
+            <camera name="camera_239222300412"
+                pos="0.44533796 -0.50380891 0.45979518"
+                mode="fixed"
+                resolution="640 480" sensorsize="1 1"
+                focal="0.598321533203125 0.796903419494629" 
+                xyaxes="0.93522115 0.34629985 0.07374150  -0.28611778 0.61649309 0.73353452"/>
+
+        </worldbody>
+        </mujoco>
+        
