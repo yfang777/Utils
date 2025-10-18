@@ -4,3 +4,6 @@ calibrator.py
 
 reset.py
 * reset the camera superparameter
+
+step 1, 2 ,3
+* Calibration Sanity Check
