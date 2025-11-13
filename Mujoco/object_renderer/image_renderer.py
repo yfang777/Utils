@@ -18,12 +18,12 @@ import matplotlib.pyplot as plt
 
 DEFAULT_CAMERA_SNIPPET = """
 <camera name="left_camera"
-        pos="0.8 -0.4 0.4"
+        pos="0.2 -0.2 0.2"
         mode="fixed"
         focal="1 1"
         resolution="640 480"
         sensorsize="1 1"
-        xyaxes="0.5547002 0.83205029 -0. -0.40360368 0.26906912 0.87447463"/>
+        xyaxes="0.70710678  0.70710678 -0. -0.40824829  0.40824829  0.81649658"/>
 """.strip()
 
 

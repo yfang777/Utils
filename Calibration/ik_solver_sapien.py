@@ -294,8 +294,3 @@ class KinHelper:
             pose = self.robot_model.get_link_pose(i)
             link_pose_ls.append(pose.to_transformation_matrix())
         return link_pose_ls
-
-    
-
-
-

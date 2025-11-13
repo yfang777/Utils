@@ -1,9 +1,14 @@
 calibrator.py
-* Self-contained Realsense Calibrator
-* Sanity Check on cube; robot
+* Realsense Calibrator
+* Usage:
+    python calibrator.py --rs_id 235422302222
 
 reset.py
 * reset the camera superparameter
+* Usage:
 
-step 1, 2 ,3
-* Calibration Sanity Check
+overlay_mj_real.py
+* Usage
+    python overlay_mj_real.py \
+        --rs_id 235422302222 \
+        --rs_params_path 
