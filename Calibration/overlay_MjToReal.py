@@ -9,16 +9,14 @@ import cv2
 import pyrealsense2 as rs
 import mujoco
 
-from .calibrator import query_mj_cam
+from calibrator import query_mj_cam
 
 def get_args():
     parser = argparse.ArgumentParser()
-
-
     parser.add_argument("--xml", type=str)
+    parser.add_argument("--img_path", type=str)
     parser.add_argument("--rs_id", type=str)
     parser.add_argument("--rs_params_path", type=str)
-
 
     return parser.parse_args()
 
@@ -31,18 +29,19 @@ def main():
     # Mujoco
     model = mujoco.MjModel.from_xml_path(args.xml)
     data = mujoco.MjData(model)
-    data.qpos[0: 7] = np.array([ 0., -0.78539816,  0., 0.52359878, 0., 1.30899694, 0.])
+    # data.qpos[0: 7] = np.array([ 0., -0.78539816,  0., 0.52359878, 0., 1.30899694, 0.])
     mujoco.mj_forward(model, data)
+    Ex_mj, K_mj = query_mj_cam(data, f"camera_{args.rs_id}", W, H)
 
-    with mujoco.Renderer(model, H, W) as renderer:  # (model, width, height)
-        cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, f"camera_{args.rs_id}")
-        renderer.update_scene(data, camera=cam_id)
-        img_mj_render = renderer.render()  # BGR uint8
-        Ex_mj, K_mj = query_mj_cam(data, f"camera_{args.rs_id}", W, H)
-
+    # with mujoco.Renderer(model, H, W) as renderer:  # (model, width, height)
+    #     cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, f"camera_{args.rs_id}")
+    #     renderer.update_scene(data, camera=cam_id)
+    #     img_mj_render = renderer.render()  # BGR uint8
+    
+    img_mj_render = cv2.imread(args.img_path, cv2.IMREAD_COLOR)
 
     # Real
-    with open(args.real_params, "rb") as f:
+    with open(args.rs_params_path, "rb") as f:
         params = pickle.load(f)
         Ex_rs = params[args.rs_id]["extrinsic"]  # 4x4 world in camera coordinates”
         K_rs  = params[args.rs_id]["intrinsic"]  # 3x3
@@ -70,7 +69,7 @@ def main():
             H_rs_to_mj = (K_mj @ np.linalg.inv(K_rs)).astype(np.float32)
             img_rs_bgr = cv2.warpPerspective(img_rs_bgr, H_rs_to_mj, (W, H), flags=cv2.INTER_LINEAR)
 
-            alpha = float(np.clip(args.blend_alpha, 0.0, 1.0))
+            alpha = float(np.clip(blend_alpha, 0.0, 1.0))
             overlay_bgr = cv2.addWeighted(img_mj_render, alpha, img_rs_bgr, 1.0 - alpha, 0.0)
 
             left  = img_rs_bgr.copy()
@@ -94,7 +93,7 @@ def main():
 
     finally:
         pipeline.stop()
-        renderer.close()
+        # renderer.close()
         cv2.destroyAllWindows()
 
 

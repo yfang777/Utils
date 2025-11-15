@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="scene">
+    <include file="/home/yuan/codegen/Utils/Calibration/assets/xarm7_gripper/xarm7_with_gripper.xml" />
+    <worldbody>
+            <light diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1" cutoff="180" castshadow="false" directional="true" />
+
+            
+            <geom type="plane" size="5 5 0.1" rgba="0.3 0.3 0.3 1" contype="1" conaffinity="1" friction="1 0.005 0.0001" />
+            
+            <body name="board_sites" pos="0 0 0">
+                <site name="s_00" type="sphere" size="0.003" pos="0.00  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_10" type="sphere" size="0.003" pos="0.04  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_20" type="sphere" size="0.003" pos="0.08  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_30" type="sphere" size="0.003" pos="0.12  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_40" type="sphere" size="0.003" pos="0.16  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_50" type="sphere" size="0.003" pos="0.20  0.00  0.0" rgba="1 0 0 1" />
+                <site name="s_60" type="sphere" size="0.003" pos="0.24  0.00  0.0" rgba="1 0 0 1" />
+
+                <site name="s_01" type="sphere" size="0.003" pos="0.00 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_11" type="sphere" size="0.003" pos="0.04 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_21" type="sphere" size="0.003" pos="0.08 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_31" type="sphere" size="0.003" pos="0.12 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_41" type="sphere" size="0.003" pos="0.16 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_51" type="sphere" size="0.003" pos="0.20 -0.04 0.0" rgba="0 1 0 1" />
+                <site name="s_61" type="sphere" size="0.003" pos="0.24 -0.04 0.0" rgba="0 1 0 1" />
+
+                <site name="s_02" type="sphere" size="0.003" pos="0.00 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_12" type="sphere" size="0.003" pos="0.04 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_22" type="sphere" size="0.003" pos="0.08 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_32" type="sphere" size="0.003" pos="0.12 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_42" type="sphere" size="0.003" pos="0.16 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_52" type="sphere" size="0.003" pos="0.20 -0.08 0.0" rgba="0 0 1 1" />
+                <site name="s_62" type="sphere" size="0.003" pos="0.24 -0.08 0.0" rgba="0 0 1 1" />
+
+                <site name="s_03" type="sphere" size="0.003" pos="0.00 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_13" type="sphere" size="0.003" pos="0.04 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_23" type="sphere" size="0.003" pos="0.08 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_33" type="sphere" size="0.003" pos="0.12 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_43" type="sphere" size="0.003" pos="0.16 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_53" type="sphere" size="0.003" pos="0.20 -0.12 0.0" rgba="1 0 1 1" />
+                <site name="s_63" type="sphere" size="0.003" pos="0.24 -0.12 0.0" rgba="1 0 1 1" />
+
+                <site name="s_04" type="sphere" size="0.003" pos="0.00 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_14" type="sphere" size="0.003" pos="0.04 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_24" type="sphere" size="0.003" pos="0.08 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_34" type="sphere" size="0.003" pos="0.12 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_44" type="sphere" size="0.003" pos="0.16 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_54" type="sphere" size="0.003" pos="0.20 -0.16 0.0" rgba="0 1 1 1" />
+                <site name="s_64" type="sphere" size="0.003" pos="0.24 -0.16 0.0" rgba="0 1 1 1" />
+
+            </body>
+
+
+
+            <camera name="camera_239222300412" pos="0.44533796 -0.50380891 0.45979518" mode="fixed" resolution="640 480" sensorsize="1 1" focal="0.598321533203125 0.796903419494629" xyaxes="0.93522115 0.34629985 0.07374150  -0.28611778 0.61649309 0.73353452" />
+
+        <camera name="camera_235422302222" pos="0.42843095 -0.49199635 0.43580091" mode="fixed" resolution="640 480" sensorsize="1 1" focal="0.5981494903564453 0.7964767456054688" xyaxes="0.91722816 0.39835000 0.00312662  -0.26727891 0.60957024 0.74631502" /></worldbody>
+</mujoco>

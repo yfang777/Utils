@@ -188,12 +188,12 @@ class Calibrator:
                     np.sum((reprojected_points - charuco_corners) ** 2, axis=1)
                 ).mean()
 
-                print("Reprojection Error:", error)
+                # print("Reprojection Error:", error)
 
                 # error origin 0.2
                 if error > 0.35 or len(charuco_corners) < 11:
                     flag = True
-                    print("Please try again.")
+                    # print("Please try again.")
             
             print("Success Project")
             R_board2cam = cv2.Rodrigues(rvec)[0]
@@ -352,10 +352,10 @@ def main():
 
     calib = Calibrator()
     calib.calibrate()
-    rs_id = get_args()
+    rs_id = args.rs_id
     camera_name = f"camera_{rs_id}"
 
-    with open("./calib_params/cam_params.pkl", "rb") as f:
+    with open("./assets/calib_params/cam_params.pkl", "rb") as f:
         camera_params = pickle.load(f)
 
     params = camera_params[rs_id]
