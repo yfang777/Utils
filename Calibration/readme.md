@@ -37,3 +37,11 @@ utils.get_render_from_mujoco.py
         --xml "./assets/tmp_scene_w_camera.xml" \
         --camera_name "camera_235422302222" \
         --img_path "./data/mujoco_imgs/scene_w_camera.jpg"
+
+utils.overlay_two_images.py
+* Usage
+    python utils/overlay_two_images.py \
+        --image1_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/episode_000000.jpg" \
+        --image2_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/scene_w_camera.jpg" \
+        --output_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/overlay.jpg"
+
