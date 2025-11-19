@@ -1,0 +1,41 @@
+<mujoco model="scene">
+    <include file="/home/yuan/codegen/Utils/Calibration/assets/xarm7_gripper_origin/xarm7_with_gripper.xml"/>
+    <worldbody>
+            <light diffuse="0.8 0.8 0.8" 
+                specular="0.2 0.2 0.2" 
+                pos="0 0 4" 
+                dir="0 0 -1" 
+                cutoff="180"
+                castshadow="false"
+                directional="true"/>
+
+            <!-- Gray ground plane -->
+            <geom type="plane" 
+                size="5 5 0.1" 
+                rgba="0.3 0.3 0.3 1" 
+                contype="1" 
+                conaffinity="1" 
+                friction="1 0.005 0.0001"/>
+        <!-- <camera name="camera_235422302222"
+  pos="0.52890246 0.39896491 -0.43099050"
+  mode="fixed"
+  resolution="640 480" sensorsize="1 1"
+  focal="0.5983125686645507 0.7966938654581706" 
+  xyaxes="0.91139418 -0.41142883 0.00932539  -0.27164353 -0.61845603 -0.73737503"/> -->
+<!-- <camera name="camera_235422302222"
+  pos="-0.31387380 -0.07261355 0.72171610"
+  mode="fixed"
+  resolution="640 480" sensorsize="1 1"
+  focal="0.5983125686645507 0.7966938654581706" 
+  xyaxes="0.91139418 0.27164353 -0.30914469  -0.41142883 0.61845603 -0.66950613"/> -->
+    
+   <camera name="camera_235422302222"
+  pos="0.52890246 -0.39896491 0.43099050"
+  mode="fixed"
+  resolution="640 480" sensorsize="1 1"
+  focal="0.5983125686645507 0.7966938654581706" 
+  xyaxes="0.91139418 0.41142883 -0.00932539  -0.27164353 0.61845603 0.73737503"/>
+
+        </worldbody>
+</mujoco>
+        

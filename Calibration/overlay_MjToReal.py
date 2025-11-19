@@ -66,10 +66,19 @@ def main():
             if not color_frame:
                 continue
             img_rs_bgr = np.asanyarray(color_frame.get_data())
-            H_rs_to_mj = (K_mj @ np.linalg.inv(K_rs)).astype(np.float32)
-            img_rs_bgr = cv2.warpPerspective(img_rs_bgr, H_rs_to_mj, (W, H), flags=cv2.INTER_LINEAR)
+            # H_rs_to_mj = (K_mj @ np.linalg.inv(K_rs)).astype(np.float32)
+            # img_rs_bgr = cv2.warpPerspective(img_rs_bgr, H_rs_to_mj, (W, H), flags=cv2.INTER_LINEAR)
 
             alpha = float(np.clip(blend_alpha, 0.0, 1.0))
+            # red_filter = img_mj_render.copy().astype(np.float32)
+            # red_filter[..., 1] *= 0.2   # reduce G
+            # red_filter[..., 2] *= 0.2   # reduce B
+            # red_filter = np.clip(red_filter, 0, 255).astype(np.uint8)
+
+            # overlay_bgr = cv2.addWeighted(red_filter, alpha, img_rs_bgr, 1 - alpha, 0)
+
+
+            
             overlay_bgr = cv2.addWeighted(img_mj_render, alpha, img_rs_bgr, 1.0 - alpha, 0.0)
 
             left  = img_rs_bgr.copy()

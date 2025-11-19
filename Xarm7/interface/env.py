@@ -8,11 +8,10 @@ import numpy as np
 from pathlib import Path
 
 import pyrealsense2 as rs
-
-import transform_utils as T
-from ik_solver_sapien import KinHelper
-
 from xarm.wrapper import XArmAPI
+
+from . import transform_utils as T
+from .kin_helper import KinHelper
 
 
 def angle2radian(angle):
@@ -23,25 +22,22 @@ def radian2angle(radian):
     angle = np.array(radian, dtype=np.float32)
     return np.rad2deg(angle)
     
-def convert(gripper_norm):
-    return (gripper_norm - 0.5) / 2 * (-510) + 500 
+def gripper_norm_2_angle(gripper_norm):
+    return 850 - gripper_norm * 1000
 
-class RealEnv():
+def gripper_angle_2_norm(gripper_angle):
+    return 0.85 - gripper_angle / 1000
 
-    def __init__(self, ip: str = "192.168.1.224", rs_id: str = "239222300412"):
+class Xarm7_env():
+
+    def __init__(self, urdf_path, rs_id):
   
-        self.dt = 1e-4
-        self.act_freq = 30
-        self.sim_2_act_time_factor = int(1 / self.dt / self.act_freq)
-        self.render_mujoco = True
-        self.render_width = 640
-        self.render_height = 480
-        self.act_freq = 30
-        self.viewer = None
         self.init_servo_angle = np.array([0.0, -45.0, 0.0, 30.0, 0.0, 75.0, 0.0])
 
+        self.kin_helper = KinHelper(urdf_path, "link_tcp")
+
         # XArm setup
-        self.arm = XArmAPI(ip, baud_checkset=False)
+        self.arm = XArmAPI("192.168.1.224", baud_checkset=False)
         self.arm.clean_warn()
         self.arm.clean_error()
         self.arm.motion_enable(True)
@@ -58,23 +54,27 @@ class RealEnv():
             self.arm.set_gripper_position(850, wait=True)
 
         # RealSense setup
-        self.pipeline = rs.pipeline()
-        self.config = rs.config()
-        self.config.enable_device(rs_id)
-        self.config.enable_stream(rs.stream.color, self.render_width, self.render_height, rs.format.bgr8, 30)
-        self.pipeline.start(self.config)
-        self.realsense_serial = rs_id
+        # self.pipeline = rs.pipeline()
+        # self.config = rs.config()
+
+        # self.config.enable_device(rs_id)
+        # self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+        # self.pipeline.start(self.config)
+        # self.rs_id = rs_id
 
 
         self.step_counter = 0
 
+        self.last_gripper_norm_value = 0.
+        self.move_threshold = 0.3
+        
         
     def reset(self):        
 
         self.arm.set_servo_angle(angle=self.init_servo_angle, isradian=False, wait=True)
         if self.gripper_enable:
             self.arm.set_gripper_position(850, wait=True)
-
+        self.qpos = angle2radian(self.init_servo_angle)
         self.step_counter = 0
         obs = self.get_obs()
         return obs, {}
@@ -86,17 +86,11 @@ class RealEnv():
         action_angle = radian2angle(action[0:7].tolist())
         self.arm.set_servo_angle(angle=action_angle, isradian=False, wait=False)
 
-
-        print("action:", action)
         # Gripper control
-        if self.gripper_enable:
-            # self.arm.set_gripper_position(500, wait=False)
-            if action[7] < 0.5:
-                self.arm.set_gripper_position(850, wait=False)
-            else:
-                self.arm.set_gripper_position(np.clip(action[7], 0.5, 2.5), wait=False)
+        if abs(action[7] - self.last_gripper_norm_value) > self.move_threshold:
+            print("gripper_norm_2_angle(action[7]):", gripper_norm_2_angle(action[7]))
+            self.arm.set_gripper_position(gripper_norm_2_angle(action[7]), wait=False)
 
-        # Step wait
         self.step_counter += 1
 
         obs = self.get_obs()
@@ -115,21 +109,21 @@ class RealEnv():
         obs = {}
 
         # Camera frame
-        frames = self.pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
-        if not color_frame:
-            raise RuntimeError("No RealSense frame received")
+        # frames = self.pipeline.wait_for_frames()
+        # color_frame = frames.get_color_frame()
+        # if not color_frame:
+        #     raise RuntimeError("No RealSense frame received")
         
-        color_image = np.asanyarray(color_frame.get_data())
-        H_rs_to_mj = (self.K_mj @ np.linalg.inv(self.K_rs)).astype(np.float32)
-        color_bgr = cv2.warpPerspective(color_image, H_rs_to_mj, (640, 480), flags=cv2.INTER_LINEAR)
+        # color_bgr = np.asanyarray(color_frame.get_data())
+        # H_rs_to_mj = (self.K_mj @ np.linalg.inv(self.K_rs)).astype(np.float32)
+        # color_bgr = cv2.warpPerspective(color_image, H_rs_to_mj, (640, 480), flags=cv2.INTER_LINEAR)
 
-
-
-        obs[f"observation.images.camera_{self.realsense_serial}"] = color_bgr
-        obs["observation.state"] = self.get_ee_pose_mj()
-
-        ee_pose_mj = self.get_ee_pose_mj()
+        # obs[f"observation.images.camera_{self.rs_id}"] = color_bgr
+        obs["observation.state_ee_pose"] = self.get_ee_pose()
+        
+        _, qpos = self.arm.get_servo_angle(is_radian=True)
+        obs["observation.state_joint_radian"] = qpos
+        ee_pose_mj = self.get_ee_pose()
 
         return obs
 
@@ -137,9 +131,11 @@ class RealEnv():
         _, qpos = self.arm.get_servo_angle(is_radian=True)
         qpos = np.array(qpos)
 
-        # Forward kinematics → starting EE pose\
-        fk_dict = self.kin_helper.compute_fk_from_link_names(np.concatenate([qpos, np.zeros(6)]), ["link_tcp"])
+        fk_dict = self.kin_helper.compute_fk_from_link_names(np.concatenate([self.qpos, np.zeros(6)]), ["link_tcp"])
         ee_pose_mat = fk_dict["link_tcp"]
+
+        
         pos, quat = T.mat2pose(ee_pose_mat, order="xyzw")
         current_pose = np.concatenate([pos, quat])  # shape (7,) x, y, z, qx, qy, qz, qw
+
         return current_pose

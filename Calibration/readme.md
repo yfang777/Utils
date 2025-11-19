@@ -12,36 +12,45 @@ reset.py
 * Usage:
 
 overlay_mj_real.py
+* Function: Overlay the mujoco rendering image to the realsense image
+    Use XML to read camera parameter to avoid the cx, cy offset
+
 * Usage
-    python overlay_mj_real.py \
-        --xml "./assets/tmp_scene_w_camera.xml" \
-        --img_path "./assets/mj_videoAndimg_for_overlay/episode_000000.jpg" \
+    python overlay_MjToReal.py \
+        --xml "/home/yuan/codegen/Utils/Calibration/assets/tmp_scene_robot_origin.xml" \
+        --img_path "/home/yuan/codegen/Utils/Calibration/data/mujoco_imgs/v4/episode_000001.jpg" \
         --rs_id 235422302222 \
         --rs_params_path "./assets/calib_params/cam_params.pkl"
 
     python overlay_MjToReal.py \
         --xml "./assets/tmp_scene_w_camera.xml" \
-        --img_path "./assets/mujoco_imgs/scene_w_board.jpg" \
+        --img_path "./data/mujoco_imgs/v1/episode_000001.jpg" \
+        --rs_id 235422302222 \
+        --rs_params_path "./assets/calib_params/cam_params.pkl"
+
+    python overlay_MjToReal.py \
+        --xml "./assets/tmp_scene_w_camera.xml" \
+        --img_path "/home/yuan/codegen/Utils/Calibration/data/mujoco_imgs/scene_w_camera.jpg" \
         --rs_id 235422302222 \
         --rs_params_path "./assets/calib_params/cam_params.pkl"
 
 utils.get_first_frame_from_video.py
 * Usage
-    python utils.get_first_frame_from_video.py \
-        --video_path "./assets/mj_videoAndimg_for_overlay/episode_000000.mp4" \
-        --output_file_path "./assets/mj_videoAndimg_for_overlay/episode_000000.jpg"
+    python -m utils.get_first_frame_from_video \
+        --video_path "/home/yuan/codegen/Utils/Xarm7/assets/replay_trajs/v4/episode_000001.mp4" \
+        --output_file_path "./data/mujoco_imgs/v4/episode_000001.jpg"
 
 utils.get_render_from_mujoco.py
 * Usage
     python utils/get_render_from_mujoco.py \
-        --xml "./assets/tmp_scene_w_camera.xml" \
+        --xml "/home/yuan/codegen/Utils/Calibration/assets/ufactory_xarm7/scene.xml" \
         --camera_name "camera_235422302222" \
-        --img_path "./data/mujoco_imgs/scene_w_camera.jpg"
+        --img_path "./data/mujoco_imgs/xarm7.jpg"
 
 utils.overlay_two_images.py
 * Usage
     python utils/overlay_two_images.py \
-        --image1_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/episode_000000.jpg" \
-        --image2_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/scene_w_camera.jpg" \
-        --output_path "/home/yf2716/codegen/Utils/Calibration/data/mujoco_imgs/overlay.jpg"
+        --image1_path "/home/yuan/codegen/Utils/Calibration/data/mujoco_imgs/v1/episode_000001.jpg" \
+        --image2_path "/home/yuan/codegen/Utils/Calibration/data/mujoco_imgs/v2/episode_000001.jpg" \
+        --output_path "/home/yuan/codegen/Utils/Calibration/data/mujoco_imgs/overlay.jpg"
 
