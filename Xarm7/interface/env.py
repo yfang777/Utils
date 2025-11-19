@@ -12,6 +12,7 @@ from xarm.wrapper import XArmAPI
 
 from . import transform_utils as T
 from .kin_helper import KinHelper
+from .utils import get_linear_interpolation_steps, linear_interpolate_poses
 
 
 def angle2radian(angle):
@@ -75,6 +76,7 @@ class Xarm7_env():
         if self.gripper_enable:
             self.arm.set_gripper_position(850, wait=True)
         self.qpos = angle2radian(self.init_servo_angle)
+        self.last_pose = self.get_ee_pose()
         self.step_counter = 0
         obs = self.get_obs()
         return obs, {}
@@ -83,9 +85,38 @@ class Xarm7_env():
         assert action.shape == (8,)
 
 
-        action_angle = radian2angle(action[0:7].tolist())
-        self.arm.set_servo_angle(angle=action_angle, isradian=False, wait=False)
+        # action_angle = radian2angle(action[0:7].tolist())
 
+        fk_dict = self.kin_helper.compute_fk_from_link_names(np.concatenate([action[0:7], np.zeros(6)]), ["link_tcp"])
+        ee_pose_mat = fk_dict["link_tcp"]
+        pos, quat = T.mat2pose(ee_pose_mat, order="xyzw")
+        target_pose = np.concatenate([pos, quat])
+        print("Per-Step target pose:", target_pose)
+
+
+        num_steps = 3
+        # num_steps = get_linear_interpolation_steps(current_pose, target_pose, self.interpolate_pos_step_size, self.interpolate_rot_step_size)
+        current_pose = self.get_ee_pose()
+        print("Per-Step current pose:", current_pose)
+        pose_seq = linear_interpolate_poses(current_pose, target_pose, num_steps)
+        for pose in pose_seq:
+
+            # Current Qpos
+            _, qpos = self.arm.get_servo_angle(is_radian=True) 
+            initial_qpos = np.concatenate([qpos, np.zeros(6)])
+            
+            # Target Pose
+            tf_mat = T.pose2mat((pose[:3], pose[3:]))
+            
+            print("Per-substep current pose:", self.get_ee_pose())
+            print("Per-substep target pose:", pose)
+            action_radian, _, _ = self.kin_helper.compute_ik_from_mat(initial_qpos, tf_mat)
+            action_angle = radian2angle(action_radian[0:7].tolist())
+            
+            self.arm.set_servo_angle(angle=action_angle, isradian=False, wait=False)
+            
+            time.sleep(0.01)
+        print("\n\n")
         # Gripper control
         if abs(action[7] - self.last_gripper_norm_value) > self.move_threshold:
             print("gripper_norm_2_angle(action[7]):", gripper_norm_2_angle(action[7]))
@@ -131,7 +162,7 @@ class Xarm7_env():
         _, qpos = self.arm.get_servo_angle(is_radian=True)
         qpos = np.array(qpos)
 
-        fk_dict = self.kin_helper.compute_fk_from_link_names(np.concatenate([self.qpos, np.zeros(6)]), ["link_tcp"])
+        fk_dict = self.kin_helper.compute_fk_from_link_names(np.concatenate([qpos, np.zeros(6)]), ["link_tcp"])
         ee_pose_mat = fk_dict["link_tcp"]
 
         

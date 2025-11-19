@@ -1258,3 +1258,4 @@ def convert_pose_quat2euler(poses_quat):
     if not batched:
         poses_euler = poses_euler[0]
     return poses_euler
+

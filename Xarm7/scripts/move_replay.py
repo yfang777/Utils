@@ -127,7 +127,8 @@ def replay(args):
         obs, _, _, _, _  = env.step(action)
         qpos = obs["observation.state_joint_radian"]
         # image = obs[f"observation.images.camera_{args.rs_id}"]
-
+        if i == 10:
+            raise ValueError
 
     perception.set_record_stop()
     realsense.stop()
