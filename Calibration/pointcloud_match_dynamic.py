@@ -30,7 +30,7 @@ def crop_pcd(pcd):
         
     # Define AABB (Axis Aligned Bounding Box)
     # Adjust these bounds based on your specific table/workspace setup
-    min_bound = np.array([-0.2, 0.0, -1.0])
+    min_bound = np.array([-0.2, -0.4, -1.0])
     max_bound = np.array([ 1.0, 0.5, 0.0])
     
     bounding_box = o3d.geometry.AxisAlignedBoundingBox(min_bound, max_bound)
@@ -178,7 +178,7 @@ def main():
     # ---------------------------
     joint_angles_list = [
         [-16.6, -24.4, -19.1, 32.3, -9.8, 55.3, -28.8], 
-        [-7.8,  -24.4, -8.9,  50.3, -1.3, 53.9, -16.4]  
+        [12.7, 4.2, 14.1, 61.9, -1.5, 58.4, 27],
     ]
 
     # ---------------------------
@@ -230,7 +230,6 @@ def main():
     finally:
         print("Closing resources...")
         pipeline.stop()
-        env_real.close()
 
 if __name__ == "__main__":
     main()
