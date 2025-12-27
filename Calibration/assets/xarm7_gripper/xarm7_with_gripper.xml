@@ -85,7 +85,7 @@
   <!-- Old: -0.095 -0.0825 0.005 -->
   <!-- -0.095, 0.085, -0.01 -->
   <worldbody>
-    <body name="link_base" pos="-0.095 -0.085 0.01" childclass="xarm7" gravcomp="1">
+    <body name="link_base" pos="-0.10 -0.085 0.005" childclass="xarm7" gravcomp="1">
       <inertial pos="-0.021131 -0.0016302 0.056488" quat="0.696843 0.20176 0.10388 0.680376" mass="0.88556"
         diaginertia="0.00382023 0.00335282 0.00167725"/>
       <geom mesh="link_base" name="link_base"/>

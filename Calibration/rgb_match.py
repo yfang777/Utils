@@ -14,7 +14,6 @@ from calibrator import query_mj_cam
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--xml", type=str)
-    parser.add_argument("--img_path", type=str)
     parser.add_argument("--rs_id", type=str)
     parser.add_argument("--rs_params_path", type=str)
 
@@ -29,16 +28,29 @@ def main():
     # Mujoco
     model = mujoco.MjModel.from_xml_path(args.xml)
     data = mujoco.MjData(model)
-    # data.qpos[0: 7] = np.array([ 0., -0.78539816,  0., 0.52359878, 0., 1.30899694, 0.])
+    data.qpos[0: 7] = np.array([ 0., -0.78539816,  0., 0.52359878, 0., 1.30899694, 0.])
+    
+    gripper_target_val = 0.85
+    gripper_joint_names = [
+        "right_driver_joint", 
+        "left_driver_joint",
+        "right_finger_joint", 
+        "left_finger_joint",
+        "right_inner_knuckle_joint", 
+        "left_inner_knuckle_joint"
+    ]
+
+    for name in gripper_joint_names:
+        jid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+        addr = model.jnt_qposadr[jid]
+        data.qpos[addr] = gripper_target_val
     mujoco.mj_forward(model, data)
     Ex_mj, K_mj = query_mj_cam(data, f"camera_{args.rs_id}", W, H)
 
-    # with mujoco.Renderer(model, H, W) as renderer:  # (model, width, height)
-    #     cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, f"camera_{args.rs_id}")
-    #     renderer.update_scene(data, camera=cam_id)
-    #     img_mj_render = renderer.render()  # BGR uint8
-    
-    img_mj_render = cv2.imread(args.img_path, cv2.IMREAD_COLOR)
+    with mujoco.Renderer(model, H, W) as renderer:
+        cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, f"camera_{args.rs_id}")
+        renderer.update_scene(data, camera=cam_id)
+        img_mj_render = renderer.render()  # BGR
 
     # Real
     with open(args.rs_params_path, "rb") as f:
@@ -66,18 +78,10 @@ def main():
             if not color_frame:
                 continue
             img_rs_bgr = np.asanyarray(color_frame.get_data())
-            # H_rs_to_mj = (K_mj @ np.linalg.inv(K_rs)).astype(np.float32)
-            # img_rs_bgr = cv2.warpPerspective(img_rs_bgr, H_rs_to_mj, (W, H), flags=cv2.INTER_LINEAR)
+            H_rs_to_mj = (K_mj @ np.linalg.inv(K_rs)).astype(np.float32)
+            img_rs_bgr = cv2.warpPerspective(img_rs_bgr, H_rs_to_mj, (W, H), flags=cv2.INTER_LINEAR)
 
             alpha = float(np.clip(blend_alpha, 0.0, 1.0))
-            # red_filter = img_mj_render.copy().astype(np.float32)
-            # red_filter[..., 1] *= 0.2   # reduce G
-            # red_filter[..., 2] *= 0.2   # reduce B
-            # red_filter = np.clip(red_filter, 0, 255).astype(np.uint8)
-
-            # overlay_bgr = cv2.addWeighted(red_filter, alpha, img_rs_bgr, 1 - alpha, 0)
-
-
             
             overlay_bgr = cv2.addWeighted(img_mj_render, alpha, img_rs_bgr, 1.0 - alpha, 0.0)
 

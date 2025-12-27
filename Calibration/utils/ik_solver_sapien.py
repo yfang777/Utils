@@ -11,7 +11,7 @@ import trimesh
 from yourdfpy import URDF
 from scipy.spatial.transform import Rotation as Rscipy
 
-import transform_utils as T
+from . import transform_utils as T
 
 
 def trimesh_to_open3d(tri_mesh: trimesh.Trimesh) -> o3d.geometry.TriangleMesh:

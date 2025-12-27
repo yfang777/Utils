@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import cv2
 import pyrealsense2 as rs
-
+import xml.etree.ElementTree as ET
 
 class Calibrator:
     def __init__(self):
@@ -229,6 +229,75 @@ class Calibrator:
             pickle.dump(camera_params, f)
 
 
+ROBOT_XML = os.path.abspath("./assets/xarm7_gripper/xarm7_with_gripper.xml")
+
+TEST_XML = f'''
+<mujoco model="scene">
+    <include file="{ROBOT_XML}"/>
+    <worldbody>
+            <light diffuse="0.8 0.8 0.8" 
+                specular="0.2 0.2 0.2" 
+                pos="0 0 4" 
+                dir="0 0 -1" 
+                cutoff="180"
+                castshadow="false"
+                directional="true"/>
+
+            <!-- Gray ground plane -->
+            <geom type="plane" 
+                size="5 5 0.1" 
+                rgba="0.3 0.3 0.3 1" 
+                contype="1" 
+                conaffinity="1" 
+                friction="1 0.005 0.0001"/>
+            
+            <body name="board_sites" pos="0 0 0">
+                <site name="s_00" type="sphere" size="0.003" pos="0.00  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_10" type="sphere" size="0.003" pos="0.04  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_20" type="sphere" size="0.003" pos="0.08  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_30" type="sphere" size="0.003" pos="0.12  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_40" type="sphere" size="0.003" pos="0.16  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_50" type="sphere" size="0.003" pos="0.20  0.00  0.0" rgba="1 0 0 1"/>
+                <site name="s_60" type="sphere" size="0.003" pos="0.24  0.00  0.0" rgba="1 0 0 1"/>
+
+                <site name="s_01" type="sphere" size="0.003" pos="0.00 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_11" type="sphere" size="0.003" pos="0.04 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_21" type="sphere" size="0.003" pos="0.08 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_31" type="sphere" size="0.003" pos="0.12 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_41" type="sphere" size="0.003" pos="0.16 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_51" type="sphere" size="0.003" pos="0.20 -0.04 0.0" rgba="0 1 0 1"/>
+                <site name="s_61" type="sphere" size="0.003" pos="0.24 -0.04 0.0" rgba="0 1 0 1"/>
+
+                <site name="s_02" type="sphere" size="0.003" pos="0.00 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_12" type="sphere" size="0.003" pos="0.04 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_22" type="sphere" size="0.003" pos="0.08 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_32" type="sphere" size="0.003" pos="0.12 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_42" type="sphere" size="0.003" pos="0.16 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_52" type="sphere" size="0.003" pos="0.20 -0.08 0.0" rgba="0 0 1 1"/>
+                <site name="s_62" type="sphere" size="0.003" pos="0.24 -0.08 0.0" rgba="0 0 1 1"/>
+
+                <site name="s_03" type="sphere" size="0.003" pos="0.00 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_13" type="sphere" size="0.003" pos="0.04 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_23" type="sphere" size="0.003" pos="0.08 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_33" type="sphere" size="0.003" pos="0.12 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_43" type="sphere" size="0.003" pos="0.16 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_53" type="sphere" size="0.003" pos="0.20 -0.12 0.0" rgba="1 0 1 1"/>
+                <site name="s_63" type="sphere" size="0.003" pos="0.24 -0.12 0.0" rgba="1 0 1 1"/>
+
+                <site name="s_04" type="sphere" size="0.003" pos="0.00 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_14" type="sphere" size="0.003" pos="0.04 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_24" type="sphere" size="0.003" pos="0.08 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_34" type="sphere" size="0.003" pos="0.12 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_44" type="sphere" size="0.003" pos="0.16 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_54" type="sphere" size="0.003" pos="0.20 -0.16 0.0" rgba="0 1 1 1"/>
+                <site name="s_64" type="sphere" size="0.003" pos="0.24 -0.16 0.0" rgba="0 1 1 1"/>
+
+            </body>
+
+        </worldbody>
+</mujoco>
+'''        
+
 def convert_rs_params_to_mj_xml(extrinsic: np.ndarray, intrinsic: np.ndarray, camera_name: str, resolution=(640, 480)) -> str:
 
     # Decompose extrinsic
@@ -290,16 +359,26 @@ def convert_rs_params_to_mj_xml(extrinsic: np.ndarray, intrinsic: np.ndarray, ca
 
     return xml
 
-def add_camera_xml_to_scene_xml(xml_file_path: str, camera_xml: str, output_xml_path: str = None):
-    import xml.etree.ElementTree as ET
-    tree = ET.parse(xml_file_path)
-    root = tree.getroot()
+def add_camera_xml_to_scene_xml(input_xml: str, camera_xml: str, output_xml_path: str):
+    """
+    Parses xml_content string, appends the camera_xml, and writes to output_xml_path.
+    """
+    root = ET.fromstring(input_xml)
 
     worldbody = root.find("worldbody")
     new_cam_elem = ET.fromstring(camera_xml)
+
     worldbody.append(new_cam_elem)
 
+    tree = ET.ElementTree(root)
+    
+    output_dir = os.path.dirname(output_xml_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        
     tree.write(output_xml_path, encoding="utf-8", xml_declaration=True)
+    print(f"Saved scene to: {os.path.abspath(output_xml_path)}")
+
 
 
 def query_mj_cam(data, camera_name, width, height):
@@ -363,7 +442,7 @@ def main():
     intrinsic = params["intrinsic"]
 
     camera_xml = convert_rs_params_to_mj_xml(extrinsic, intrinsic, camera_name)
-    add_camera_xml_to_scene_xml(xml_file_path="./assets/tmp_scene.xml", camera_xml=camera_xml, output_xml_path="./assets/tmp_scene_w_camera.xml")
+    add_camera_xml_to_scene_xml(input_xml=TEST_XML, camera_xml=camera_xml, output_xml_path="./assets/tmp_scene_w_camera.xml")
 
 
 if __name__ == "__main__":
