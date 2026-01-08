@@ -114,21 +114,21 @@ def replay(args):
     perception.start()
     perception.set_record_start()
     for i in range(num_steps):
+        if i % 1 == 0:
+            # actions: ee_pose + gripper_norm [x ,y, z, qx, qy, qz, qw, gripper_norm]
+            action_ee_pose = actions[i][:7]
 
-        # actions: ee_pose + gripper_norm [x ,y, z, qx, qy, qz, qw, gripper_norm]
-        action_ee_pose = actions[i][:7]
+            ee_pose_mat = T.convert_pose_quat2mat(action_ee_pose)
+            action_joint_angle, _, _ = kin_helper.compute_ik_from_mat(np.concatenate([qpos, np.zeros(6)]), ee_pose_mat)
+            action_gripper_norm = actions[i][7]
+            action = np.concatenate([action_joint_angle[:7], [action_gripper_norm]])
 
-        ee_pose_mat = T.convert_pose_quat2mat(action_ee_pose)
-        action_joint_angle, _, _ = kin_helper.compute_ik_from_mat(np.concatenate([qpos, np.zeros(6)]), ee_pose_mat)
-        action_gripper_norm = actions[i][7]
-        action = np.concatenate([action_joint_angle[:7], [action_gripper_norm]])
-
-        # action to env: joint_angle + gripper_norm
-        obs, _, _, _, _  = env.step(action)
-        qpos = obs["observation.state_joint_radian"]
+            # action to env: joint_angle + gripper_norm
+            obs, _, _, _, _  = env.step(action)
+            qpos = obs["observation.state_joint_radian"]
         # image = obs[f"observation.images.camera_{args.rs_id}"]
-        if i == 10:
-            raise ValueError
+        # if i == 10:
+        #     raise ValueError
 
     perception.set_record_stop()
     realsense.stop()

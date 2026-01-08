@@ -42,7 +42,7 @@ class Xarm7_env():
         self.arm.clean_warn()
         self.arm.clean_error()
         self.arm.motion_enable(True)
-        self.arm.set_mode(0)   # Position control
+        self.arm.set_mode(1)   # Position control
         self.arm.set_state(0)  # Ready state
 
         # Gripper
@@ -67,18 +67,21 @@ class Xarm7_env():
         self.step_counter = 0
 
         self.last_gripper_norm_value = 0.
-        self.move_threshold = 0.3
+        self.move_threshold = 0.05
         
         
     def reset(self):        
-
+        self.arm.set_mode(0)   # Position control
+        self.arm.set_state(0)
         self.arm.set_servo_angle(angle=self.init_servo_angle, isradian=False, wait=True)
         if self.gripper_enable:
             self.arm.set_gripper_position(850, wait=True)
-        self.qpos = angle2radian(self.init_servo_angle)
-        self.last_pose = self.get_ee_pose()
+        self.last_qpos = angle2radian(self.init_servo_angle)
+        self.last_target_pose = self.get_ee_pose()
         self.step_counter = 0
         obs = self.get_obs()
+        self.arm.set_mode(1)   # Position control
+        self.arm.set_state(0)
         return obs, {}
 
     def step(self, action, mode="ee_pose"):
@@ -91,36 +94,34 @@ class Xarm7_env():
         ee_pose_mat = fk_dict["link_tcp"]
         pos, quat = T.mat2pose(ee_pose_mat, order="xyzw")
         target_pose = np.concatenate([pos, quat])
-        print("Per-Step target pose:", target_pose)
-
 
         num_steps = 3
-        # num_steps = get_linear_interpolation_steps(current_pose, target_pose, self.interpolate_pos_step_size, self.interpolate_rot_step_size)
-        current_pose = self.get_ee_pose()
-        print("Per-Step current pose:", current_pose)
-        pose_seq = linear_interpolate_poses(current_pose, target_pose, num_steps)
+        pose_seq = linear_interpolate_poses(self.last_target_pose, target_pose, num_steps)
+        
         for pose in pose_seq:
 
-            # Current Qpos
-            _, qpos = self.arm.get_servo_angle(is_radian=True) 
-            initial_qpos = np.concatenate([qpos, np.zeros(6)])
-            
-            # Target Pose
+            initial_qpos = np.concatenate([self.last_qpos, np.zeros(6)])
             tf_mat = T.pose2mat((pose[:3], pose[3:]))
-            
-            print("Per-substep current pose:", self.get_ee_pose())
-            print("Per-substep target pose:", pose)
             action_radian, _, _ = self.kin_helper.compute_ik_from_mat(initial_qpos, tf_mat)
             action_angle = radian2angle(action_radian[0:7].tolist())
             
-            self.arm.set_servo_angle(angle=action_angle, isradian=False, wait=False)
+            self.arm.set_servo_angle_j(angles=action_angle, isradian=False, wait=False)
             
-            time.sleep(0.01)
+            self.last_qpos = action_radian[0:7]
+            time.sleep(1/90)
+        self.last_target_pose = target_pose
+
         print("\n\n")
         # Gripper control
         if abs(action[7] - self.last_gripper_norm_value) > self.move_threshold:
             print("gripper_norm_2_angle(action[7]):", gripper_norm_2_angle(action[7]))
             self.arm.set_gripper_position(gripper_norm_2_angle(action[7]), wait=False)
+            self.last_gripper_norm_value = action[7]
+            time.sleep(0.05)
+
+            if self.last_gripper_norm_value > 0.79:
+                self.arm.set_gripper_position(-10, wait=False)
+                time.sleep(0.05)
 
         self.step_counter += 1
 

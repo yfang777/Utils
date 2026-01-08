@@ -67,6 +67,7 @@ class KinHelper:
             initial_qpos=initial_qpos,
             active_qmask=self.active_qmask,
             eps=1e-3,
+            dt=0.01,
             damp=damp,
         )
         return qpos, success, error

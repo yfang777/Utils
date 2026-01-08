@@ -68,7 +68,7 @@
     <parent link="link_base"/>
     <child link="link1"/>
     <axis xyz="0 0 1"/>
-    <limit effort="50" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
+    <limit effort="500" lower="-6.283185307179586" upper="6.283185307179586" velocity="31.4"/>
     <dynamics damping="10" friction="1"/>
   </joint>
   <link name="link2">
@@ -96,7 +96,7 @@
     <parent link="link1"/>
     <child link="link2"/>
     <axis xyz="0 0 1"/>
-    <limit effort="50" lower="-2.059" upper="2.0944" velocity="3.14"/>
+    <limit effort="500" lower="-2.059" upper="2.0944" velocity="31.4"/>
     <dynamics damping="10" friction="1"/>
   </joint>
   <link name="link3">
@@ -124,7 +124,7 @@
     <parent link="link2"/>
     <child link="link3"/>
     <axis xyz="0 0 1"/>
-    <limit effort="30" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
+    <limit effort="300" lower="-6.283185307179586" upper="6.283185307179586" velocity="31.4"/>
     <dynamics damping="5" friction="1"/>
   </joint>
   <link name="link4">
@@ -152,7 +152,7 @@
     <parent link="link3"/>
     <child link="link4"/>
     <axis xyz="0 0 1"/>
-    <limit effort="30" lower="-0.19198" upper="3.927" velocity="3.14"/>
+    <limit effort="300" lower="-0.19198" upper="3.927" velocity="31.4"/>
     <dynamics damping="5" friction="1"/>
   </joint>
   <link name="link5">
@@ -180,7 +180,7 @@
     <parent link="link4"/>
     <child link="link5"/>
     <axis xyz="0 0 1"/>
-    <limit effort="30" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
+    <limit effort="300" lower="-6.283185307179586" upper="6.283185307179586" velocity="31.4"/>
     <dynamics damping="5" friction="1"/>
   </joint>
   <link name="link6">
@@ -208,7 +208,7 @@
     <parent link="link5"/>
     <child link="link6"/>
     <axis xyz="0 0 1"/>
-    <limit effort="20" lower="-1.69297" upper="3.141592653589793" velocity="3.14"/>
+    <limit effort="200" lower="-1.69297" upper="3.141592653589793" velocity="31.4"/>
     <dynamics damping="2" friction="1"/>
   </joint>
   <link name="link7">
@@ -236,7 +236,7 @@
     <parent link="link6"/>
     <child link="link7"/>
     <axis xyz="0 0 1"/>
-    <limit effort="20" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.14"/>
+    <limit effort="200" lower="-6.283185307179586" upper="6.283185307179586" velocity="31.4"/>
     <dynamics damping="2" friction="1"/>
   </joint>
   <!-- <link name="${prefix}link_eef" />
@@ -395,7 +395,7 @@
     <parent link="xarm_gripper_base_link"/>
     <child link="left_outer_knuckle"/>
     <axis xyz="1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
   </joint>
   <link name="left_finger">
     <inertial>
@@ -422,7 +422,7 @@
     <parent link="left_outer_knuckle"/>
     <child link="left_finger"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
     <mimic joint="drive_joint" multiplier="1" offset="0"/>
   </joint>
   <link name="left_inner_knuckle">
@@ -450,7 +450,7 @@
     <parent link="xarm_gripper_base_link"/>
     <child link="left_inner_knuckle"/>
     <axis xyz="1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
     <mimic joint="drive_joint" multiplier="1" offset="0"/>
   </joint>
   <link name="right_outer_knuckle">
@@ -478,7 +478,7 @@
     <parent link="xarm_gripper_base_link"/>
     <child link="right_outer_knuckle"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
     <mimic joint="drive_joint" multiplier="1" offset="0"/>
   </joint>
   <link name="right_finger">
@@ -506,7 +506,7 @@
     <parent link="right_outer_knuckle"/>
     <child link="right_finger"/>
     <axis xyz="1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
     <mimic joint="drive_joint" multiplier="1" offset="0"/>
   </joint>
   <link name="right_inner_knuckle">
@@ -534,7 +534,7 @@
     <parent link="xarm_gripper_base_link"/>
     <child link="right_inner_knuckle"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+    <limit effort="500" lower="0" upper="0.85" velocity="20"/>
     <mimic joint="drive_joint" multiplier="1" offset="0"/>
   </joint>
   <link name="link_tcp"/>
