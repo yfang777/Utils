@@ -16,6 +16,7 @@ def get_args():
     parser.add_argument("--xml", type=str, default="assets/xarm7_gripper/xarm7_with_gripper.xml")
     parser.add_argument("--rs_id", type=str, default="213522071539")
     parser.add_argument("--rs_params_path", type=str, default="assets/calibration_data.pkl")
+    parser.add_argument("--rs_frames", type=int, default=200, help="Number of frames to accumulate for RealSense pointcloud")
     return parser.parse_args()
 
 def crop_pcd(pcd):
@@ -31,7 +32,7 @@ def crop_pcd(pcd):
     # Define AABB (Axis Aligned Bounding Box)
     # Adjust these bounds based on your specific table/workspace setup
     min_bound = np.array([-0.2, -0.4, -1.0])
-    max_bound = np.array([ 1.0, 0.5, 0.0])
+    max_bound = np.array([ 1.0, 0.5, -0.01])
     
     bounding_box = o3d.geometry.AxisAlignedBoundingBox(min_bound, max_bound)
     cropped_pcd = pcd.crop(bounding_box)
@@ -81,48 +82,62 @@ def get_mujoco_pcd(model, data, camera_name, W, H):
     
     return pcd
 
-def get_realsense_pcd(pipeline, params, W, H):
+def get_realsense_pcd(pipeline, params, W, H, num_frames=30):
     """
-    Captures depth from active RealSense pipeline, aligns to World, 
-    and returns a Green PointCloud.
+    Captures depth from active RealSense pipeline multiple times, 
+    aligns to World, merges them, and returns a Green PointCloud.
     """
     ex_rs = params["extrinsic"] # World-to-Camera
     k_rs = params["intrinsic"]
 
-    # 1. Capture Frame
-    frames = pipeline.wait_for_frames()
-    align = rs.align(rs.stream.color)
-    aligned_frames = align.process(frames)
-    aligned_depth_frame = aligned_frames.get_depth_frame()
-    
-    if not aligned_depth_frame:
-        return None
-
-    # 2. Create Open3D PointCloud
-    depth_image = np.asanyarray(aligned_depth_frame.get_data())
-    o3d_depth = o3d.geometry.Image(depth_image)
-    
     fx, fy = k_rs[0, 0], k_rs[1, 1]
     cx, cy = k_rs[0, 2], k_rs[1, 2]
     intrinsics = o3d.camera.PinholeCameraIntrinsic(W, H, fx, fy, cx, cy)
-
-    pcd = o3d.geometry.PointCloud.create_from_depth_image(
-        o3d_depth,
-        intrinsics,
-        depth_scale=1000.0,  # RS usually uses mm
-        depth_trunc=3.0,
-        stride=1
-    )
-    
-    # 3. Transform to World Frame
     cam_to_world = np.linalg.inv(ex_rs)
-    pcd.transform(cam_to_world)
+    
+    combined_pcd = o3d.geometry.PointCloud()
+    
+    print(f"[RealSense] Accumulating {num_frames} frames...")
+    align = rs.align(rs.stream.color)
 
-    # 4. Crop and Color
-    pcd = crop_pcd(pcd)
-    pcd.paint_uniform_color([0, 1, 0]) # RGB for Green
+    for _ in range(num_frames):
+        # 1. Capture Frame
+        frames = pipeline.wait_for_frames()
+        aligned_frames = align.process(frames)
+        aligned_depth_frame = aligned_frames.get_depth_frame()
         
-    return pcd
+        if not aligned_depth_frame:
+            continue
+
+        # 2. Create Open3D PointCloud
+        depth_image = np.asanyarray(aligned_depth_frame.get_data())
+        o3d_depth = o3d.geometry.Image(depth_image)
+        
+        pcd_frame = o3d.geometry.PointCloud.create_from_depth_image(
+            o3d_depth,
+            intrinsics,
+            depth_scale=1000.0,  # RS usually uses mm
+            depth_trunc=3.0,
+            stride=1
+        )
+        
+        # 3. Transform to World Frame
+        pcd_frame.transform(cam_to_world)
+
+        # 4. Crop
+        pcd_frame = crop_pcd(pcd_frame)
+        
+        if pcd_frame is not None:
+             combined_pcd += pcd_frame
+
+    # 5. Downsample and Color
+    # Voxel downsample to reduce noise and normalize density
+    if not combined_pcd.is_empty():
+        combined_pcd = combined_pcd.voxel_down_sample(voxel_size=0.005) # 5mm voxel
+        combined_pcd.paint_uniform_color([0, 1, 0]) # RGB for Green
+        return combined_pcd
+    else:
+        return None
 
 def main():
     args = get_args()
@@ -211,7 +226,7 @@ def main():
             print("[Capture] Generating point clouds...")
             
             mujoco_pcd = get_mujoco_pcd(model, data, camera_name, W, H)
-            rs_pcd = get_realsense_pcd(pipeline, rs_params, W, H)
+            rs_pcd = get_realsense_pcd(pipeline, rs_params, W, H, num_frames=args.rs_frames)
 
             # D. Visualize
             geometries = []
